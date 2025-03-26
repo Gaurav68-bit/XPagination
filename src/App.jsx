@@ -65,12 +65,11 @@ const App = () => {
         >
           Previous
         </button>
+        <span>{currentPage} </span>
         <button
-        
-        
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-        ><span> Page {currentPage} </span>
+        >
           Next
         </button>
       </div>
