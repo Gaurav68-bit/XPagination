@@ -1,75 +1,67 @@
 import React, { useState, useEffect } from "react";
-import "./App.css";
 
-const API_URL =
-  "https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json";
-
-const App = () => {
-  const [employees, setEmployees] = useState([]);
+const EmployeeTable = () => {
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-          throw new Error("failed to fetch data");
-        }
-        const data = await response.json();
-        setEmployees(data);
-      } catch (error) {
-        alert("failed to fetch data",error);
-      }
-    };
-    fetchEmployees();
+    fetch("https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json")
+      .then((res) => res.json())
+      .then((data) => setData(data))
+      .catch(() => alert("failed to fetch data"));
   }, []);
 
-  // Pagination Logic
-  const totalPages = Math.ceil(employees.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentEmployees = employees.slice(startIndex, endIndex);
+  // Get current page data
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Handle next and previous buttons
+  const handleNext = () => {
+    if (currentPage < Math.ceil(data.length / itemsPerPage)) {
+      setCurrentPage((prevPage) => prevPage + 1);  // ✅ Ensuring state updates properly
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
 
   return (
-    <div className="container">
-      <h2>Employee Data Table</h2>
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
+    <div style={{ width: "100%", textAlign: "center" }}>
+      <h1>Employee Data Table</h1>
+      <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ backgroundColor: "green", color: "white" }}>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentItems.map((employee) => (
+            <tr key={employee.id}>
+              <td>{employee.id}</td>
+              <td>{employee.name}</td>
+              <td>{employee.email}</td>
+              <td>{employee.role}</td>
             </tr>
-          </thead>
-          <tbody>
-            {currentEmployees.map((emp) => (
-              <tr key={emp.id}>
-                <td>{emp.id}</td>
-                <td>{emp.name}</td>
-                <td>{emp.email}</td>
-                <td>{emp.role}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
 
-      {/* Pagination Controls */}
-      <div className="pagination">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          // disabled={currentPage === 1}
-        >
+      <div style={{ marginTop: "10px" }}>
+        <button onClick={handlePrevious} disabled={currentPage === 1}>
           Previous
         </button>
-        <span>{currentPage}</span>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          // disabled={currentPage === totalPages}
-        >
+
+        <h2 data-testid="page-number">{currentPage}</h2>
+
+        <button onClick={handleNext} disabled={currentPage === Math.ceil(data.length / itemsPerPage)}>
           Next
         </button>
       </div>
@@ -77,4 +69,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default EmployeeTable;
